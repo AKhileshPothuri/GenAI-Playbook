@@ -1,129 +1,160 @@
 #!/usr/bin/env python3
 """
-AI Agent Demo: A Simple Goal-Oriented Agent
-This demonstrates core AI agent concepts through a practical example.
+AI Agent Demo: A Simple Task-Planning Agent
+
+This demonstrates the core concepts of an AI agent:
+- Perception: Reading user goals and environment
+- Reasoning: Breaking down tasks into steps
+- Action: Executing and tracking progress
 """
 
-import random
+import json
 import time
-from dataclasses import dataclass
-from typing import List, Dict, Any
+from datetime import datetime
+from typing import List, Dict
 
-@dataclass
-class Environment:
-    """Simulates a simple task environment with obstacles and goals"""
-    obstacles: List[str]
-    available_tools: List[str]
-    goal_status: Dict[str, bool]
-    
 class SimpleAIAgent:
-    """A basic AI agent that perceives, decides, and acts autonomously"""
+    """A basic AI agent that demonstrates perception, reasoning, and action"""
     
-    def __init__(self, name: str, goal: str):
+    def __init__(self, name: str):
         self.name = name
-        self.goal = goal
-        self.memory = []  # Agent's experience memory
-        self.actions_taken = []
-        
-    def perceive(self, environment: Environment) -> Dict[str, Any]:
-        """PERCEPTION: Agent observes its environment"""
-        perception = {
-            'obstacles_detected': environment.obstacles,
-            'tools_available': environment.available_tools,
-            'goal_progress': environment.goal_status
+        self.memory = []  # Agent's memory of actions taken
+        self.task_knowledge = {
+            "write_email": ["draft content", "review tone", "check recipients", "send"],
+            "plan_meeting": ["check calendars", "find time slot", "book room", "send invites"],
+            "research_topic": ["identify sources", "gather information", "analyze data", "summarize findings"],
+            "create_report": ["outline structure", "collect data", "write content", "format document"]
         }
-        self.memory.append(f"Perceived: {perception}")
-        return perception
     
-    def decide(self, perception: Dict[str, Any]) -> str:
-        """DECISION-MAKING: Agent chooses best action based on observations"""
-        # Simple decision logic (in real agents, this would be much more sophisticated)
-        if perception['obstacles_detected']:
-            action = f"analyze_obstacle_{random.choice(perception['obstacles_detected'])}"
-        elif perception['tools_available']:
-            action = f"use_tool_{random.choice(perception['tools_available'])}"
+    def perceive(self, user_input: str) -> Dict:
+        """PERCEPTION: Understanding the environment and user request"""
+        print(f"🔍 {self.name} is perceiving the request...")
+        
+        # Simple keyword matching to understand the task
+        task_type = None
+        for task in self.task_knowledge.keys():
+            if any(word in user_input.lower() for word in task.split('_')):
+                task_type = task
+                break
+        
+        environment = {
+            "user_request": user_input,
+            "task_type": task_type,
+            "timestamp": datetime.now().strftime("%H:%M:%S"),
+            "complexity": len(user_input.split())  # Simple complexity measure
+        }
+        
+        print(f"   Detected task type: {task_type or 'general'}")
+        return environment
+    
+    def reason(self, environment: Dict) -> List[str]:
+        """REASONING: Planning the steps to achieve the goal"""
+        print(f"🧠 {self.name} is reasoning and planning...")
+        
+        task_type = environment['task_type']
+        
+        if task_type and task_type in self.task_knowledge:
+            steps = self.task_knowledge[task_type]
         else:
-            action = "explore_environment"
-            
-        print(f"🧠 {self.name} decides: {action}")
-        return action
-    
-    def act(self, action: str, environment: Environment) -> bool:
-        """ACTION: Agent executes chosen action and modifies environment"""
-        print(f"🤖 {self.name} executes: {action}")
-        self.actions_taken.append(action)
+            # Generic problem-solving approach
+            steps = ["understand requirements", "research options", "create solution", "review results"]
         
-        # Simulate action effects
-        if "analyze_obstacle" in action:
-            obstacle = action.split("_")[-1]
-            if obstacle in environment.obstacles:
-                environment.obstacles.remove(obstacle)
-                environment.available_tools.append(f"solution_for_{obstacle}")
-                print(f"✅ Obstacle '{obstacle}' analyzed and solution found!")
-                
-        elif "use_tool" in action:
-            tool = action.split("_")[-1]
-            if tool in environment.available_tools:
-                environment.goal_status[self.goal] = True
-                print(f"🎯 Goal '{self.goal}' achieved using {tool}!")
-                return True
-                
-        return False
+        print(f"   Planned {len(steps)} steps to complete the task")
+        return steps
     
-    def is_goal_achieved(self, environment: Environment) -> bool:
-        """Check if agent has achieved its goal"""
-        return environment.goal_status.get(self.goal, False)
+    def act(self, steps: List[str], environment: Dict) -> Dict:
+        """ACTION: Executing the planned steps"""
+        print(f"🚀 {self.name} is taking action...")
+        
+        results = {
+            "task": environment['user_request'],
+            "steps_completed": [],
+            "status": "in_progress",
+            "start_time": environment['timestamp']
+        }
+        
+        for i, step in enumerate(steps, 1):
+            print(f"   Step {i}/{len(steps)}: {step.title()}...")
+            time.sleep(0.5)  # Simulate work being done
+            
+            results['steps_completed'].append({
+                "step": step,
+                "status": "completed",
+                "time": datetime.now().strftime("%H:%M:%S")
+            })
+            
+            # Store in memory
+            self.memory.append(f"Completed: {step}")
+        
+        results['status'] = "completed"
+        results['end_time'] = datetime.now().strftime("%H:%M:%S")
+        
+        print(f"✅ Task completed successfully!")
+        return results
+    
+    def process_request(self, user_input: str) -> Dict:
+        """Main agent loop: Perceive -> Reason -> Act"""
+        print(f"\n{'='*50}")
+        print(f"AI Agent '{self.name}' Processing Request")
+        print(f"{'='*50}")
+        
+        # Agent's core loop
+        environment = self.perceive(user_input)
+        planned_steps = self.reason(environment)
+        results = self.act(planned_steps, environment)
+        
+        return results
 
-def demonstrate_agent_behavior():
-    """Main demonstration of AI agent concepts"""
-    print("🚀 AI Agent Demo: Understanding Autonomous Behavior\n")
+def demonstrate_multi_agent_system():
+    """Shows multiple agents working together"""
+    print("\n" + "="*60)
+    print("MULTI-AGENT SYSTEM DEMO")
+    print("="*60)
     
-    # Create environment with challenges
-    env = Environment(
-        obstacles=["data_inconsistency", "network_timeout", "authentication_error"],
-        available_tools=["debugger", "retry_mechanism"],
-        goal_status={}
-    )
+    # Create specialized agents
+    research_agent = SimpleAIAgent("ResearchBot")
+    writing_agent = SimpleAIAgent("WriterBot")
     
-    # Create an AI agent with a specific goal
-    agent = SimpleAIAgent("DataProcessorAgent", "process_customer_data")
+    # Simulate collaboration
+    task1_result = research_agent.process_request("research market trends for AI agents")
+    task2_result = writing_agent.process_request("write email summary of research findings")
     
-    print(f"🎯 Agent Goal: {agent.goal}")
-    print(f"🌍 Environment: {len(env.obstacles)} obstacles, {len(env.available_tools)} tools\n")
+    print(f"\n📊 Collaboration Summary:")
+    print(f"   - {research_agent.name}: {task1_result['status']}")
+    print(f"   - {writing_agent.name}: {task2_result['status']}")
+
+def main():
+    print("🤖 AI Agent Demonstration")
+    print("This demo shows how AI agents work: Perceive → Reason → Act")
     
-    # Agent operates autonomously until goal is achieved
-    step = 1
-    max_steps = 10
+    # Create an AI agent
+    agent = SimpleAIAgent("TaskBot")
     
-    while not agent.is_goal_achieved(env) and step <= max_steps:
-        print(f"--- Step {step} ---")
-        
-        # 1. PERCEIVE: Agent observes environment
-        perception = agent.perceive(env)
-        
-        # 2. DECIDE: Agent chooses action based on observations
-        action = agent.decide(perception)
-        
-        # 3. ACT: Agent executes action and potentially achieves goal
-        goal_achieved = agent.act(action, env)
-        
-        if goal_achieved:
-            break
-            
-        step += 1
-        time.sleep(1)  # Pause for readability
-        print()
+    # Demo different types of requests
+    sample_requests = [
+        "Please help me write an email to the team",
+        "I need to plan a meeting for next week",
+        "Create a report on our quarterly performance"
+    ]
     
-    # Summary
-    print("\n" + "="*50)
-    if agent.is_goal_achieved(env):
-        print(f"✅ SUCCESS: {agent.name} achieved its goal in {step} steps!")
-    else:
-        print(f"❌ Agent reached maximum steps without achieving goal")
-        
-    print(f"\n📊 Agent took {len(agent.actions_taken)} actions:")
-    for i, action in enumerate(agent.actions_taken, 1):
-        print(f"   {i}. {action}")
+    for request in sample_requests:
+        result = agent.process_request(request)
+    
+    # Show agent's memory
+    print(f"\n🧠 Agent Memory ({len(agent.memory)} items):")
+    for memory in agent.memory[-3:]:  # Show last 3 memories
+        print(f"   - {memory}")
+    
+    # Demonstrate multi-agent collaboration
+    demonstrate_multi_agent_system()
+    
+    print(f"\n" + "="*60)
+    print("Demo complete! This shows the basic concepts of AI agents:")
+    print("✓ Perception: Understanding requests and environment")
+    print("✓ Reasoning: Planning steps to achieve goals")
+    print("✓ Action: Executing plans and tracking progress")
+    print("✓ Memory: Storing experiences for future use")
+    print("✓ Collaboration: Multiple agents working together")
 
 if __name__ == "__main__":
-    demonstrate_agent_behavior()
+    main()
