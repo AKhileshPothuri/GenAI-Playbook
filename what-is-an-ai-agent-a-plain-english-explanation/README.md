@@ -1,82 +1,87 @@
-# AI Agent Demo: Understanding Autonomous Behavior
+# AI Agent Demo: Understanding Agents in Plain English
 
-A simple Python demonstration that explains AI agent concepts through a practical, runnable example. This project shows how AI agents differ from traditional software by demonstrating autonomous perception, decision-making, and action-taking behavior.
+A simple Python demonstration that explains what AI agents are and how they work, built for the Medium article "What is an AI Agent? A Plain-English Explanation".
 
 ## What This Does
 
-This demo creates a simple AI agent that:
-- **Perceives** its environment (detects obstacles and available tools)
-- **Decides** what action to take based on observations
-- **Acts** autonomously to achieve its goal
-- **Adapts** its behavior as the environment changes
+This project demonstrates the core concepts of AI agents through a simple task-planning system:
+- **Perception**: How agents understand requests and their environment
+- **Reasoning**: How agents plan steps to achieve goals
+- **Action**: How agents execute plans and track progress
+- **Memory**: How agents store and recall past experiences
+- **Multi-agent collaboration**: How multiple agents work together
 
-Unlike traditional software that follows pre-programmed steps, this agent makes decisions based on what it observes, demonstrating the core concept of "agentic" behavior.
+## Installation & Setup
 
-## Installation
-
-1. Clone or download this project
-2. No external dependencies needed! Uses only Python standard library
-3. Run the demo:
-
-bash
-python main.py
-
+1. **Clone or download this project**
+2. **No additional packages needed** - uses only Python standard library
+3. **Run the demo**:
+   bash
+   python main.py
+   
 
 ## Expected Output
 
+The demo will show an AI agent processing different types of requests:
 
-🚀 AI Agent Demo: Understanding Autonomous Behavior
 
-🎯 Agent Goal: process_customer_data
-🌍 Environment: 3 obstacles, 2 tools
-
---- Step 1 ---
-🧠 DataProcessorAgent decides: analyze_obstacle_network_timeout
-🤖 DataProcessorAgent executes: analyze_obstacle_network_timeout
-✅ Obstacle 'network_timeout' analyzed and solution found!
-
---- Step 2 ---
-🧠 DataProcessorAgent decides: use_tool_solution_for_network_timeout
-🤖 DataProcessorAgent executes: use_tool_solution_for_network_timeout
-🎯 Goal 'process_customer_data' achieved using solution_for_network_timeout!
+🤖 AI Agent Demonstration
+This demo shows how AI agents work: Perceive → Reason → Act
 
 ==================================================
-✅ SUCCESS: DataProcessorAgent achieved its goal in 2 steps!
+AI Agent 'TaskBot' Processing Request
+==================================================
+🔍 TaskBot is perceiving the request...
+   Detected task type: write_email
+🧠 TaskBot is reasoning and planning...
+   Planned 4 steps to complete the task
+🚀 TaskBot is taking action...
+   Step 1/4: Draft Content...
+   Step 2/4: Review Tone...
+   Step 3/4: Check Recipients...
+   Step 4/4: Send...
+✅ Task completed successfully!
 
-📊 Agent took 2 actions:
-   1. analyze_obstacle_network_timeout
-   2. use_tool_solution_for_network_timeout
+[Additional examples and multi-agent demo follow]
+
+🧠 Agent Memory (3 items):
+   - Completed: draft content
+   - Completed: review tone
+   - Completed: check recipients
+
+============================================================
+MULTI-AGENT SYSTEM DEMO
+============================================================
+[Shows ResearchBot and WriterBot collaborating]
+
+Demo complete! This shows the basic concepts of AI agents:
+✓ Perception: Understanding requests and environment
+✓ Reasoning: Planning steps to achieve goals
+✓ Action: Executing plans and tracking progress
+✓ Memory: Storing experiences for future use
+✓ Collaboration: Multiple agents working together
 
 
 ## Key Concepts Demonstrated
 
-1. **Autonomy**: Agent operates independently without step-by-step human instruction
-2. **Goal-Oriented**: All decisions are made to achieve a specific objective
-3. **Environmental Awareness**: Agent adapts behavior based on current conditions
-4. **Perception-Decision-Action Loop**: Core cycle of intelligent behavior
-
-## How It Works
-
-The `SimpleAIAgent` class implements the three core components of AI agents:
-
-- **`perceive()`**: Observes environment state
-- **`decide()`**: Chooses optimal action based on observations
-- **`act()`**: Executes action and modifies environment
-
-This cycle repeats until the agent achieves its goal or reaches maximum steps.
+- **Autonomous Decision Making**: The agent breaks down tasks without human guidance
+- **Task Planning**: Different request types trigger different step sequences
+- **Memory System**: Agents remember what they've done
+- **Multi-Agent Coordination**: Specialized agents working on related tasks
+- **Perception-Reasoning-Action Loop**: The fundamental cycle of AI agents
 
 ## Perfect For
 
-- Understanding AI agent fundamentals
-- Medium articles about AI concepts
-- Educational demonstrations
-- Foundation for more complex agent projects
+- Understanding AI agent basics
+- Teaching autonomous systems concepts
+- Demonstrating the difference between traditional software and AI agents
+- Exploring multi-agent architectures
 
 ## Next Steps
 
-To explore real-world AI agents, consider:
-- LangChain agents with LLMs
-- Multi-agent frameworks like CrewAI
-- Production agent platforms (Microsoft Copilot Studio, etc.)
+To build real AI agents, explore frameworks like:
+- **LangChain**: For LLM-powered agents
+- **AutoGen**: Microsoft's multi-agent framework
+- **CrewAI**: Collaborative AI agent systems
 
-This simple demo provides the conceptual foundation for understanding those advanced systems!
+This demo provides the conceptual foundation for understanding these more advanced systems!
