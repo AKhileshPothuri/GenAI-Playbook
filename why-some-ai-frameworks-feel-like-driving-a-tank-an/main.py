@@ -2,120 +2,152 @@
 """
 Why Some AI Frameworks Feel Like Driving a Tank
 ================================================
-This demo compares building the SAME simple task using:
-1. "Tank Mode" - Heavy framework simulation (verbose, over-engineered)
-2. "Sports Car Mode" - Lightweight, direct approach
+This demo compares THREE approaches to the same task:
+1. Raw OpenAI API (bicycle - simple, direct)
+2. LangChain (SUV - moderate abstraction)
+3. Simulated "Enterprise Framework" (tank - maximum ceremony)
 
-The task: Summarize a piece of text and extract key points.
-Spoiler: You don't always need a tank.
+All three do the SAME thing: summarize text. Watch the complexity grow!
 """
 
 import os
 import time
-from openai import OpenAI
+from typing import Optional
 
-# Initialize client (works with OpenAI or compatible APIs)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "your-api-key-here"))
+# We'll simulate the enterprise framework to avoid heavy dependencies
+# But use real OpenAI for the first two approaches
 
-SAMPLE_TEXT = """
-Artificial intelligence frameworks have exploded in popularity. MetaGPT offers
-multi-agent software development. AutoGen enables conversational AI patterns.
-CrewAI provides role-based agent teams. Meanwhile, OpenAI's agents-python keeps
-things minimal. The question isn't which is 'best' - it's which fits YOUR task.
-"""
-
-# ============ TANK MODE: Over-engineered approach ============
-class AgentConfig:
-    """Configuration class (because tanks need manuals)"""
-    def __init__(self, name, role, goal, backstory):
-        self.name, self.role, self.goal, self.backstory = name, role, goal, backstory
-
-class TaskPipeline:
-    """Pipeline orchestrator (tanks have complex systems)"""
-    def __init__(self, agents, tasks, verbose=True):
-        self.agents, self.tasks, self.verbose = agents, tasks, verbose
-        self.results = []
+def approach_1_bicycle(text: str, api_key: str) -> dict:
+    """The Bicycle: Raw OpenAI API - just ride and go!"""
+    from openai import OpenAI
     
-    def execute(self, text):
-        for i, (agent, task) in enumerate(zip(self.agents, self.tasks)):
-            if self.verbose:
-                print(f"  [Pipeline] Stage {i+1}: {agent.name} executing '{task}'...")
-            # All this ceremony... for one API call
-            self.results.append(f"Result from {agent.name}")
-        return self.results
-
-def tank_mode(text):
-    """The heavy framework experience - lots of setup, same result"""
-    print("\n🚜 TANK MODE: Heavy Framework Simulation")
-    print("="*50)
-    start = time.time()
-    
-    # Step 1: Define agents with backstories (really?)
-    summarizer = AgentConfig("SummarizerAgent", "Senior Analyst", 
-        "Create summaries", "20 years of summarizing experience...")
-    extractor = AgentConfig("ExtractorAgent", "Key Point Specialist",
-        "Extract insights", "PhD in extraction sciences...")
-    
-    # Step 2: Create pipeline
-    pipeline = TaskPipeline([summarizer, extractor], ["summarize", "extract"])
-    pipeline.execute(text)
-    
-    # Step 3: Finally, make the actual API call
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": f"Summarize and extract 3 key points:\n{text}"}]
-    )
-    
-    elapsed = time.time() - start
-    print(f"  [Setup overhead: All that config for one API call]")
-    print(f"  Time: {elapsed:.2f}s | Lines of setup: ~25")
-    return response.choices[0].message.content
-
-# ============ SPORTS CAR MODE: Just drive ============
-def sports_car_mode(text):
-    """The lightweight approach - direct and effective"""
-    print("\n🏎️  SPORTS CAR MODE: Lightweight Approach")
-    print("="*50)
+    client = OpenAI(api_key=api_key)
     start = time.time()
     
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": f"Summarize and extract 3 key points:\n{text}"}]
+        messages=[{"role": "user", "content": f"Summarize in one sentence: {text}"}],
+        max_tokens=100
     )
     
-    elapsed = time.time() - start
-    print(f"  [No ceremony, just results]")
-    print(f"  Time: {elapsed:.2f}s | Lines of code: ~8")
-    return response.choices[0].message.content
+    return {
+        "result": response.choices[0].message.content,
+        "time": time.time() - start,
+        "lines_of_code": 6,
+        "concepts_to_learn": ["API client", "messages format"]
+    }
 
-# ============ DECISION HELPER ============
-def print_decision_guide():
-    print("\n" + "="*50)
-    print("🎯 WHEN TO CHOOSE WHAT")
-    print("="*50)
+def approach_2_suv(text: str, api_key: str) -> dict:
+    """The SUV: LangChain - comfortable, more features, more setup"""
+    from langchain_openai import ChatOpenAI
+    from langchain.prompts import ChatPromptTemplate
+    from langchain.schema.output_parser import StrOutputParser
+    
+    start = time.time()
+    
+    # Build the chain (LangChain way)
+    llm = ChatOpenAI(model="gpt-3.5-turbo", api_key=api_key, max_tokens=100)
+    prompt = ChatPromptTemplate.from_template("Summarize in one sentence: {text}")
+    chain = prompt | llm | StrOutputParser()
+    result = chain.invoke({"text": text})
+    
+    return {
+        "result": result,
+        "time": time.time() - start,
+        "lines_of_code": 8,
+        "concepts_to_learn": ["ChatPromptTemplate", "Chain composition", "OutputParser", "LCEL syntax"]
+    }
+
+def approach_3_tank(text: str, api_key: str) -> dict:
+    """The Tank: Simulated Enterprise Framework - maximum ceremony!"""
+    start = time.time()
+    
+    # Simulating what heavy frameworks often require...
+    print("    [Tank] Initializing AgentOrchestrationManager...")
+    print("    [Tank] Loading PromptTemplateRegistry...")
+    print("    [Tank] Configuring MemoryBufferStrategyFactory...")
+    print("    [Tank] Establishing CallbackHandlerChain...")
+    print("    [Tank] Validating AgentRoleDefinitionSchema...")
+    time.sleep(0.5)  # Simulated initialization overhead
+    
+    # Under the hood, tanks still just call the API!
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": f"Summarize in one sentence: {text}"}],
+        max_tokens=100
+    )
+    
+    return {
+        "result": response.choices[0].message.content,
+        "time": time.time() - start,
+        "lines_of_code": "50+ (config files not included)",
+        "concepts_to_learn": ["Agents", "Crews", "Tasks", "Roles", "Memory", "Callbacks", 
+                              "Tools", "Orchestration", "YAML configs", "Delegation patterns"]
+    }
+
+def main():
+    """Run all three approaches and compare results."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("❌ Please set OPENAI_API_KEY environment variable")
+        print("   export OPENAI_API_KEY='your-key-here'")
+        return
+    
+    sample_text = """
+    The Python programming language was created by Guido van Rossum and first 
+    released in 1991. It emphasizes code readability with significant whitespace 
+    and supports multiple programming paradigms including procedural, object-oriented, 
+    and functional programming. Python has become one of the most popular languages 
+    for AI and machine learning applications.
+    """
+    
+    print("="*60)
+    print("🚲 vs 🚙 vs 🚛  FRAMEWORK COMPLEXITY SHOWDOWN")
+    print("="*60)
+    print(f"\nTask: Summarize a paragraph about Python\n")
+    
+    approaches = [
+        ("🚲 BICYCLE (Raw API)", approach_1_bicycle),
+        ("🚙 SUV (LangChain)", approach_2_suv),
+        ("🚛 TANK (Enterprise)", approach_3_tank),
+    ]
+    
+    results = []
+    for name, func in approaches:
+        print(f"\n{'-'*50}")
+        print(f"{name}")
+        print(f"{'-'*50}")
+        result = func(sample_text, api_key)
+        results.append((name, result))
+        print(f"  Result: {result['result']}")
+        print(f"  Time: {result['time']:.2f}s")
+        print(f"  Lines of code: {result['lines_of_code']}")
+        print(f"  Concepts to learn: {len(result['concepts_to_learn'])}")
+    
+    print(f"\n{'='*60}")
+    print("📊 THE VERDICT")
+    print("="*60)
     print("""
-    USE A TANK (Heavy Framework) WHEN:
-    ✓ Multiple agents need to collaborate
-    ✓ Complex state management required
-    ✓ You need built-in memory/tool systems
-    ✓ Production system with many workflows
+    Use the BICYCLE (raw API) when:
+    ✓ Simple, one-off tasks
+    ✓ Learning how things work
+    ✓ Maximum control needed
     
-    USE A SPORTS CAR (Lightweight) WHEN:
-    ✓ Single task or simple chain
-    ✓ Prototyping or learning
-    ✓ You value understanding your code
-    ✓ Latency and simplicity matter
+    Use the SUV (LangChain) when:
+    ✓ Building chains of operations  
+    ✓ Need prompt templating
+    ✓ Want ecosystem integrations
+    
+    Use the TANK (heavy frameworks) when:
+    ✓ Multi-agent orchestration
+    ✓ Complex workflow management
+    ✓ Enterprise requirements
+    ✓ You ACTUALLY need the firepower!
+    
+    Remember: A tank is overkill for grocery shopping! 🛒
     """)
 
 if __name__ == "__main__":
-    print("\n" + "🤖 AI FRAMEWORK WEIGHT CLASS COMPARISON".center(50))
-    
-    # Run both approaches
-    result1 = tank_mode(SAMPLE_TEXT)
-    print(f"\n  Result: {result1[:100]}...")
-    
-    result2 = sports_car_mode(SAMPLE_TEXT)
-    print(f"\n  Result: {result2[:100]}...")
-    
-    print_decision_guide()
-    print("\n💡 Both produce the SAME result. Choose complexity wisely!\n")
+    main()
