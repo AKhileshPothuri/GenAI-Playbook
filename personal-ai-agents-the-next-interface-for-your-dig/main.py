@@ -1,93 +1,92 @@
 #!/usr/bin/env python3
 """
-Personal AI Agent: Your Digital Life Assistant
-
-A starter implementation showing how AI agents can autonomously
-handle tasks like scheduling, web research, and task management.
+Personal AI Agent: A starter example demonstrating autonomous task execution.
+This agent can manage your digital life by planning and executing multi-step tasks.
 """
 
 import os
 from datetime import datetime
 from openai import OpenAI
 
-# Initialize OpenAI client
+# Initialize the OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Agent's available tools/capabilities
-TOOLS = {
-    "check_calendar": lambda date: f"Calendar for {date}: Meeting at 2pm, Gym at 6pm",
-    "add_reminder": lambda task: f"✓ Reminder set: '{task}'",
-    "search_web": lambda query: f"Top result for '{query}': Latest AI news from TechCrunch",
-    "send_message": lambda msg: f"✓ Message queued: '{msg[:30]}...'",
-    "get_weather": lambda loc: f"Weather in {loc}: 72°F, Sunny",
+# Define the tools/capabilities our personal agent has access to
+AGENT_TOOLS = {
+    "check_calendar": lambda: f"📅 Today's events: Team standup at 10am, Lunch with Sarah at 12pm",
+    "check_weather": lambda: f"🌤️ Weather: 72°F, partly cloudy, 10% chance of rain",
+    "check_emails": lambda: f"📧 3 unread emails: 1 urgent from boss, 2 newsletters",
+    "check_tasks": lambda: f"✅ Pending tasks: Review PR #42, Submit expense report, Call mom",
+    "get_time": lambda: f"🕐 Current time: {datetime.now().strftime('%I:%M %p')}",
 }
 
-def agent_decide(user_request: str, context: list) -> dict:
-    """Agent analyzes request and decides which tool to use."""
-    system_prompt = """You are a Personal AI Agent. Analyze the user's request and respond with:
-1. TOOL: one of [check_calendar, add_reminder, search_web, send_message, get_weather, none]
-2. PARAM: the parameter to pass to the tool
-3. RESPONSE: a friendly response to the user
+def execute_tool(tool_name: str) -> str:
+    """Execute a tool and return its result."""
+    if tool_name in AGENT_TOOLS:
+        return AGENT_TOOLS[tool_name]()
+    return f"❌ Unknown tool: {tool_name}"
 
-Format your response exactly as:
-TOOL: <tool_name>
-PARAM: <parameter>
-RESPONSE: <your friendly response>"""
+def run_personal_agent(user_request: str) -> str:
+    """Run the personal AI agent to handle a user request."""
     
-    messages = [{"role": "system", "content": system_prompt}]
-    messages.extend(context)
-    messages.append({"role": "user", "content": user_request})
+    # System prompt defining our agent's personality and capabilities
+    system_prompt = f"""You are a helpful personal AI agent managing the user's digital life.
     
+Available tools: {', '.join(AGENT_TOOLS.keys())}
+
+When responding:
+1. First, identify which tools you need (prefix with TOOL:)
+2. Then provide a helpful summary based on the information gathered
+3. Suggest proactive next actions
+
+Format tool calls as: TOOL: tool_name"""
+
+    # Get the agent's plan
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=messages,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_request}
+        ],
         temperature=0.7,
-        max_tokens=200
+        max_tokens=500
     )
     
-    # Parse agent's decision
-    text = response.choices[0].message.content
-    result = {"tool": "none", "param": "", "response": text}
+    agent_plan = response.choices[0].message.content
+    print("\n🤖 Agent Planning...\n")
     
-    for line in text.split("\n"):
-        if line.startswith("TOOL:"):
-            result["tool"] = line.replace("TOOL:", "").strip().lower()
-        elif line.startswith("PARAM:"):
-            result["param"] = line.replace("PARAM:", "").strip()
-        elif line.startswith("RESPONSE:"):
-            result["response"] = line.replace("RESPONSE:", "").strip()
+    # Execute any tools the agent requested
+    tool_results = []
+    for line in agent_plan.split('\n'):
+        if line.strip().startswith('TOOL:'):
+            tool_name = line.replace('TOOL:', '').strip()
+            result = execute_tool(tool_name)
+            tool_results.append(result)
+            print(f"  Executing: {tool_name}")
     
-    return result
-
-def run_agent():
-    """Main agent loop - maintains context and handles user requests."""
-    print("\n🤖 Personal AI Agent Initialized")
-    print(f"   Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    print("   Type 'quit' to exit\n")
+    # If tools were executed, get a final summary
+    if tool_results:
+        context = "\n".join(tool_results)
+        final_response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Summarize this information helpfully and suggest next actions:"},
+                {"role": "user", "content": f"User asked: {user_request}\n\nGathered info:\n{context}"}
+            ],
+            temperature=0.7
+        )
+        return f"\n📊 Tool Results:\n{context}\n\n💬 Agent Summary:\n{final_response.choices[0].message.content}"
     
-    context = []  # Agent maintains conversation history
-    
-    while True:
-        user_input = input("You: ").strip()
-        if user_input.lower() in ["quit", "exit", "q"]:
-            print("\n👋 Agent shutting down. Goodbye!")
-            break
-        
-        # Agent decides what to do
-        decision = agent_decide(user_input, context)
-        
-        # Execute tool if needed
-        tool_result = ""
-        if decision["tool"] in TOOLS:
-            tool_result = TOOLS[decision["tool"]](decision["param"])
-            print(f"   [Agent Action: {tool_result}]")
-        
-        print(f"Agent: {decision['response']}\n")
-        
-        # Update context for persistent memory
-        context.append({"role": "user", "content": user_input})
-        context.append({"role": "assistant", "content": decision["response"]})
-        context = context[-10:]  # Keep last 10 messages
+    return agent_plan
 
 if __name__ == "__main__":
-    run_agent()
+    print("="*60)
+    print("🏠 Personal AI Agent - Your Digital Life Interface")
+    print("="*60)
+    
+    # Example: Morning briefing request
+    request = "Give me my morning briefing - what do I need to know today?"
+    print(f"\n👤 You: {request}")
+    
+    result = run_personal_agent(request)
+    print(result)
